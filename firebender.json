@@ -1,0 +1,263 @@
+{
+  "rules": [
+    "이 프로젝트는 클린 아키텍처를 사용하여 안드로이드, iOS, 웹어셈블리를 지원하는 Kotlin 멀티플랫폼(KMP) 프로젝트입니다",
+    "절대 runBlocking을 사용하지 말고, suspend 함수와 적절한 코루틴 스코프를 사용해주세요",
+    "리액티브 프로그래밍 패턴에는 항상 StateFlow와 Flow를 사용해주세요",
+    "플랫폼별 구현에는 expect/actual 패턴을 사용해주세요",
+    "의존성 주입은 수동 DI 방식으로 구현하되, 각 레이어별로 DI 모듈을 분리해주세요",
+    "모든 코드는 한국어 주석을 포함하여 가독성을 높여주세요",
+    "에러 처리는 Result<T> 패턴을 사용하여 안전하고 명확하게 처리해주세요",
+    "비즈니스 로직과 UI 로직을 명확히 분리해주세요",
+    {
+      "filePathMatches": "**/*.kt",
+      "rulesPaths": "docs/architecture.md"
+    },
+    {
+      "filePathMatches": "**/domain/**/*.kt",
+      "rules": [
+        "도메인 레이어 - 순수 코틀린만 사용하고 플랫폼 의존성은 금지합니다",
+        "androidx, compose, ktor-client 등 외부 프레임워크 import를 금지합니다",
+        "Use Case는 단일 책임 원칙을 따라 하나의 비즈니스 기능만 담당해야 합니다",
+        "모든 도메인 모델은 불변 data class여야 합니다",
+        "Use Case에서 에러 처리는 Result<T> 또는 유사한 타입을 사용해주세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/data/**/*.kt",
+      "rules": [
+        "데이터 레이어 - 도메인 인터페이스를 구현하고 외부 데이터 소스를 처리합니다",
+        "WASM은 실제 네트워크 호출 대신 목 데이터 소스를 사용해야 합니다 - delay()로 네트워크 지연 시뮬레이션",
+        "JSON API와 상호작용하는 DTO에는 @Serializable을 사용해주세요",
+        "DTO와 도메인 모델 간 매핑은 확장 함수(toDomain(), toDto())로 구현해주세요",
+        "DataSource는 expect/actual 패턴으로 플랫폼별 구현을 제공해주세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/presentation/**/*.kt",
+      "rules": [
+        "프레젠테이션 레이어 - UI와 ViewModel만 포함합니다",
+        "ViewModel은 androidx.lifecycle.ViewModel을 상속해야 합니다",
+        "UI 상태 관리에는 StateFlow를 사용하고, 직접적인 mutable state는 사용하지 마세요",
+        "도메인 레이어 Use Case만 의존하고, 데이터 레이어는 직접 의존하지 마세요",
+        "UI 컴포넌트는 Material 3 디자인 가이드라인을 따라주세요",
+        "WASM 호환성을 위해 ID 생성시 kotlin.random.Random을 사용해주세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/app/**/*.kt",
+      "rules": [
+        "앱 레이어 - 진입점과 의존성 주입 설정을 담당합니다",
+        "WASM을 포함한 모든 플랫폼에서 작동하는 수동 DI 설정을 사용해주세요",
+        "플랫폼별 진입점: MainActivity(안드로이드), main()(WASM), MainViewController(iOS)",
+        "플랫폼 식별용 expect/actual 함수 (getPlatform())를 구현해주세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/*ViewModel.kt",
+      "rules": [
+        "ViewModel은 StateFlow를 사용하여 UI 상태를 관리해야 합니다",
+        "코루틴 실행에는 viewModelScope를 사용해주세요",
+        "각 화면별로 별도의 UI 상태 data class를 생성해주세요",
+        "로딩 상태, 성공 상태, 에러 상태를 처리해주세요",
+        "비즈니스 로직은 ViewModel이 아닌 도메인 Use Case에 작성해주세요",
+        "StateFlow는 asStateFlow()를 사용해 읽기 전용으로 노출해주세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/*Screen.kt",
+      "rules": [
+        "Compose 화면은 상태를 갖지 않는 함수여야 합니다",
+        "ViewModel을 매개변수로 받고 상태를 관찰해주세요",
+        "Material 3 컴포넌트를 일관되게 사용해주세요",
+        "모든 UI 상태를 처리하세요: 로딩, 성공, 에러, 빈 상태",
+        "리컴포지션을 위한 Compose 모범 사례를 따라주세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/*UseCase.kt",
+      "rules": [
+        "Use Case는 단일 책임 비즈니스 로직을 포함해야 합니다",
+        "도메인 레이어의 Repository 인터페이스만 의존해주세요",
+        "지속적인 데이터 스트림에는 Flow<T>를 반환해주세요",
+        "일회성 작업에는 에러 처리가 포함된 Result<T>를 반환해주세요",
+        "주요 기능에는 operator 함수(invoke)를 사용해주세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/*Repository*.kt",
+      "rules": [
+        "Repository 인터페이스는 도메인 레이어(/domain/repository/)에 위치합니다",
+        "Repository 구현체는 데이터 레이어(/data/repository/)에 위치합니다",
+        "인터페이스는 Flow<T> 또는 suspend 함수로 계약을 정의해야 합니다",
+        "CRUD 작업은 모두 suspend 함수로 구현하되 적절한 Result 타입을 반환해주세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/*DataSource*.kt",
+      "rules": [
+        "DataSource는 expect/actual 패턴으로 플랫폼별 구현을 제공해야 합니다",
+        "안드로이드/iOS는 실제 Ktor HTTP 클라이언트를 사용해주세요",
+        "WASM은 목 데이터와 delay()를 사용해 네트워크 호출을 시뮬레이션해주세요",
+        "DTO 객체만 다루고 도메인 모델은 직접 사용하지 마세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/*Dto.kt",
+      "rules": [
+        "DTO는 외부 API 스펙과 정확히 일치하도록 작성해주세요",
+        "@Serializable 애노테이션을 반드시 포함해주세요",
+        "도메인 모델 매핑을 위한 확장 함수를 함께 정의해주세요: toDomain(), toDto()"
+      ]
+    },
+    {
+      "filePathMatches": "**/build.gradle.kts",
+      "rules": [
+        "Kotlin 2.2.0과 Compose Multiplatform 1.9.0-beta03을 사용해주세요",
+        "적절한 KMP 타겟을 구성하세요: androidTarget, iosX64, iosArm64, iosSimulatorArm64, wasmJs",
+        "모든 모듈에서 JVM toolchain 11을 일관되게 사용해주세요",
+        "각 플랫폼별 Ktor 엔진을 명시적으로 추가해주세요: OkHttp(Android), Darwin(iOS), Js(WASM)"
+      ]
+    },
+    {
+      "filePathMatches": "**/*Test.kt",
+      "rules": [
+        "멀티플랫폼 테스트에는 kotlin-test를 사용해주세요",
+        "Use Case는 목 리포지토리로 독립적으로 테스트해주세요",
+        "ViewModel 테스트에는 코루틴용 TestDispatcher를 사용해주세요",
+        "에러 시나리오와 엣지 케이스를 테스트해주세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/Platform*.kt",
+      "rules": [
+        "플랫폼별 구현은 expect/actual 패턴을 사용해주세요",
+        "각 플랫폼별 특성을 나타내는 데이터 클래스를 정의해주세요",
+        "플랫폼 식별이 필요한 경우에만 사용하고, 비즈니스 로직에는 포함하지 마세요"
+      ]
+    },
+    {
+      "filePathMatches": "**/*DI*.kt",
+      "rules": [
+        "의존성 주입 모듈은 각 레이어별로 분리해주세요",
+        "모든 의존성은 인터페이스를 통해 주입받아야 합니다",
+        "플랫폼별 구현체는 expect/actual로 분리해주세요",
+        "싱글톤 객체는 thread-safe하게 구현해주세요"
+      ]
+    }
+  ],
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem"
+      ],
+      "env": {
+        "ALLOWED_DIRECTORIES": "C:/Users/dntmd/StudioProjects/KotlinProject"
+      }
+    },
+    "git": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-git"
+      ],
+      "env": {}
+    },
+    "kotlin-multiplatform": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-kotlin-multiplatform"
+      ],
+      "env": {
+        "PROJECT_TYPE": "kotlin-multiplatform",
+        "ARCHITECTURE": "clean-architecture",
+        "TARGETS": "android,ios,wasm",
+        "UI_FRAMEWORK": "compose-multiplatform"
+      }
+    },
+    "compose-multiplatform": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-compose"
+      ],
+      "env": {
+        "VERSION": "1.9.0-beta03",
+        "MATERIAL_VERSION": "3",
+        "TARGETS": "android,ios,wasm"
+      }
+    },
+    "fetch": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ],
+      "env": {}
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {}
+    },
+    "time": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-time"
+      ],
+      "env": {}
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequentialthinking"
+      ],
+      "env": {}
+    },
+    "everything": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ],
+      "env": {}
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": ""
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-playwright"
+      ],
+      "env": {
+        "BROWSER": "chromium"
+      }
+    },
+    "gradle": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@gradle/gradle-mcp-server"
+      ],
+      "env": {
+        "PROJECT_ROOT": "C:/Users/dntmd/StudioProjects/KotlinProject"
+      }
+    }
+  }
+}
