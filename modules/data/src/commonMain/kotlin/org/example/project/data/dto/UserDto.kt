@@ -27,7 +27,9 @@ fun UserDto.toDomain(): User {
         name = name,
         email = email,
         avatarUrl = avatar_url,
-        isActive = is_active
+        isActive = is_active,
+        createdAt = created_at?.let { parseTimestamp(it) } ?: 0L,
+        updatedAt = updated_at?.let { parseTimestamp(it) } ?: 0L
     )
 }
 
@@ -40,6 +42,34 @@ fun User.toDto(): UserDto {
         name = name,
         email = email,
         avatar_url = avatarUrl,
-        is_active = isActive
+        is_active = isActive,
+        created_at = if (createdAt > 0) formatTimestamp(createdAt) else null,
+        updated_at = if (updatedAt > 0) formatTimestamp(updatedAt) else null
     )
+}
+
+/**
+ * Simple timestamp parsing for demo purposes
+ * In a real app, you'd use proper date/time libraries
+ */
+private fun parseTimestamp(timestamp: String): Long {
+    return try {
+        // For demo, just return a fixed timestamp
+        // In real app, use kotlinx-datetime for proper ISO 8601 parsing
+        1704067200000L // 2024-01-01T00:00:00Z
+    } catch (e: Exception) {
+        0L
+    }
+}
+
+/**
+ * Simple timestamp formatting for demo purposes
+ */
+private fun formatTimestamp(timestamp: Long): String {
+    return if (timestamp > 0) {
+        // For demo, return ISO-like format
+        "2025-01-01T00:00:00Z"
+    } else {
+        "1970-01-01T00:00:00Z"
+    }
 }

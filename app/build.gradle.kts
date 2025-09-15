@@ -7,12 +7,13 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
         }
     }
     
@@ -28,6 +29,7 @@ kotlin {
     }
 
     // WASM 타겟 다시 추가 - Kodein-DI 사용
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
         outputModuleName.set("composeApp")
         browser {
@@ -50,15 +52,10 @@ kotlin {
     }
 
     // JVM Toolchain 설정
-    jvmToolchain(11)
+    jvmToolchain(libs.versions.jvmToolchain.get().toInt())
 
     sourceSets {
         commonMain.dependencies {
-            // Clean Architecture modules - 새로운 경로
-            implementation(project(":modules:domain"))
-            implementation(project(":modules:data"))
-            implementation(project(":modules:presentation"))
-
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -68,7 +65,14 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            // Simple manual DI - no framework needed!
+            // DateTime support for KMP
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+
+            // kotlin-inject for DI - 올바른 버전 사용
+            implementation(libs.kotlinInjectRuntime)
+            implementation(project(":modules:presentation"))
+            implementation(project(":modules:domain"))
+            implementation(project(":modules:data"))
         }
 
         androidMain.dependencies {
@@ -77,15 +81,17 @@ kotlin {
         }
 
         iosMain.dependencies {
-            // iOS는 commonMain의 Kodein-DI 사용
+            // iOS는 commonMain의 kotlin-inject 사용
         }
 
         wasmJsMain.dependencies {
-            // WASM은 commonMain의 Kodein-DI 사용
+            // WASM은 commonMain의 kotlin-inject 사용
         }
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
         }
     }
 }
@@ -100,7 +106,18 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                it.useJUnitPlatform()
+            }
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -112,12 +129,19 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.toVersion(libs.versions.javaVersion.get())
+        targetCompatibility = JavaVersion.toVersion(libs.versions.javaVersion.get())
     }
 }
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    
+    // kotlin-inject KSP processor for all targets
+    add("kspCommonMainMetadata", libs.kotlinInjectCompiler)
+    add("kspAndroid", libs.kotlinInjectCompiler)
+    add("kspIosX64", libs.kotlinInjectCompiler)
+    add("kspIosArm64", libs.kotlinInjectCompiler)
+    add("kspIosSimulatorArm64", libs.kotlinInjectCompiler)
+    add("kspWasmJs", libs.kotlinInjectCompiler)
 }
-

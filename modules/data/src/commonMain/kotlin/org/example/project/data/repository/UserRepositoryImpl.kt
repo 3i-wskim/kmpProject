@@ -2,6 +2,7 @@ package org.example.project.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import org.example.project.data.datasource.UserRemoteDataSource
 import org.example.project.data.dto.toDomain
 import org.example.project.data.dto.toDto
@@ -61,6 +62,32 @@ class UserRepositoryImpl(
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    override fun searchUsersByName(name: String): Flow<List<User>> = flow {
+        try {
+            val userDtos = remoteDataSource.getUsers()
+            val users = userDtos
+                .map { it.toDomain() }
+                .filter { user ->
+                    user.name.contains(name, ignoreCase = true)
+                }
+            emit(users)
+        } catch (e: Exception) {
+            emit(emptyList())
+        }
+    }
+
+    override suspend fun findUserByEmail(email: String): User? {
+        return try {
+            val userDtos = remoteDataSource.getUsers()
+            val user = userDtos
+                .map { it.toDomain() }
+                .find { it.email.equals(email, ignoreCase = true) }
+            user
+        } catch (e: Exception) {
+            null
         }
     }
 }

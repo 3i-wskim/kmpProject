@@ -32,4 +32,16 @@ class GetUsersUseCase(
                 }
             }
     }
+
+    /**
+     * Get users with complete profiles
+     */
+    fun getCompleteProfiles(): Flow<List<User>> {
+        return userRepository.getUsers()
+            .map { users ->
+                users.filter { user ->
+                    user.isActive && user.isProfileComplete()
+                }
+            }
+    }
 }

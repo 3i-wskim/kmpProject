@@ -33,6 +33,7 @@ dependencyResolutionManagement {
 }
 
 include(":app")
+include(":application")
 include(":modules:domain")
 include(":modules:data")
 include(":modules:presentation")

@@ -25,7 +25,7 @@ actual class UserRemoteDataSourceImpl : UserRemoteDataSource {
 
     private val baseUrl = "https://api.example.com"
 
-    override suspend fun getUsers(): List<UserDto> {
+    actual override suspend fun getUsers(): List<UserDto> {
         return try {
             httpClient.get("$baseUrl/users").body()
         } catch (e: Exception) {
@@ -34,7 +34,7 @@ actual class UserRemoteDataSourceImpl : UserRemoteDataSource {
         }
     }
 
-    override suspend fun getUserById(id: String): UserDto? {
+    actual override suspend fun getUserById(id: String): UserDto? {
         return try {
             httpClient.get("$baseUrl/users/$id").body()
         } catch (e: Exception) {
@@ -42,7 +42,7 @@ actual class UserRemoteDataSourceImpl : UserRemoteDataSource {
         }
     }
 
-    override suspend fun createUser(user: UserDto): UserDto {
+    actual override suspend fun createUser(user: UserDto): UserDto {
         return try {
             httpClient.post("$baseUrl/users") {
                 contentType(ContentType.Application.Json)
@@ -53,7 +53,7 @@ actual class UserRemoteDataSourceImpl : UserRemoteDataSource {
         }
     }
 
-    override suspend fun updateUser(user: UserDto): UserDto {
+    actual override suspend fun updateUser(user: UserDto): UserDto {
         return try {
             httpClient.put("$baseUrl/users/${user.id}") {
                 contentType(ContentType.Application.Json)
@@ -64,7 +64,7 @@ actual class UserRemoteDataSourceImpl : UserRemoteDataSource {
         }
     }
 
-    override suspend fun deleteUser(id: String) {
+    actual override suspend fun deleteUser(id: String) {
         try {
             httpClient.delete("$baseUrl/users/$id")
         } catch (e: Exception) {

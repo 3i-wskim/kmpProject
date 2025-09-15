@@ -9,195 +9,121 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.example.project.domain.model.User
-import org.example.project.presentation.viewmodel.UserViewModel
+import org.example.project.presentation.navigation.actions.MainNavigationActions
+import org.example.project.presentation.navigation.arguments.UserDetailArgument
 
 /**
- * Composable screen for displaying a list of users.
- * This is part of the Presentation layer and depends only on the ViewModel.
+ * 사용자 목록 스크린
+ * - 등록된 사용자 목록 표시
+ * - 사용자 선택 시 상세 페이지로 이동
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserListScreen(
-    viewModel: UserViewModel,
-    modifier: Modifier = Modifier
+    navigationActions: MainNavigationActions
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    // 임시 사용자 데이터 (실제로는 ViewModel에서 관리)
+    val users = remember {
+        listOf(
+            UserDetailArgument(userId = 1L, userName = "김철수"),
+            UserDetailArgument(userId = 2L, userName = "이영희"),
+            UserDetailArgument(userId = 3L, userName = "박민수"),
+            UserDetailArgument(userId = 4L, userName = "최수진"),
+            UserDetailArgument(userId = 5L, userName = "정우성")
+        )
+    }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Title
-        Text(
-            text = "Users",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
+        TopAppBar(
+            title = {
+                Text(
+                    text = "사용자 목록",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            navigationIcon = {
+                IconButton(
+                    onClick = { navigationActions.navigateBack() }
+                ) {
+                    Text("←")
+                }
+            }
         )
 
-        // Search Bar
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { viewModel.onSearchQueryChanged(it) },
-            label = { Text("Search users...") },
+        LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            singleLine = true
-        )
-
-        // Add User Button
-        var showAddUserDialog by remember { mutableStateOf(false) }
-        Button(
-            onClick = { showAddUserDialog = true },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Add New User")
-        }
-
-        // Content
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            items(users) { user ->
+                UserCard(
+                    user = user,
+                    onClick = { navigationActions.navigateToUserDetail(user) }
+                )
             }
-
-            uiState.error != null -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Error: ${uiState.error}",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Button(onClick = { viewModel.clearError() }) {
-                        Text("Retry")
-                    }
-                }
-            }
-
-            uiState.users.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No users found")
-                }
-            }
-
-            else -> {
-                LazyColumn {
-                    items(uiState.users) { user ->
-                        UserCard(
-                            user = user,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-                }
-            }
-        }
-
-        // Add User Dialog
-        if (showAddUserDialog) {
-            AddUserDialog(
-                onAddUser = { name, email ->
-                    viewModel.addUser(name, email)
-                    showAddUserDialog = false
-                },
-                onDismiss = { showAddUserDialog = false }
-            )
         }
     }
 }
 
 @Composable
 private fun UserCard(
-    user: User,
-    modifier: Modifier = Modifier
+    user: UserDetailArgument,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = user.name,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = user.email,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            if (!user.isActive) {
+            // 사용자 아바타
+            Card(
+                modifier = Modifier.size(48.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = user.userName?.first()?.toString()?.uppercase() ?: "?",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
-                    text = "Inactive",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+                    text = user.userName ?: "이름 없음",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "ID: ${user.userId}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Text(
+                text = "→",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
-}
-
-@Composable
-private fun AddUserDialog(
-    onAddUser: (String, String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add New User") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Name") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    singleLine = true
-                )
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onAddUser(name, email) },
-                enabled = name.isNotBlank() && email.isNotBlank()
-            ) {
-                Text("Add")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
 }

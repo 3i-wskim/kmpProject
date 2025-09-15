@@ -1,37 +1,20 @@
 package org.example.project
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import org.example.project.presentation.navigation.AppNavigation
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.example.project.data.datasource.UserRemoteDataSource
-import org.example.project.data.datasource.UserRemoteDataSourceImpl
-import org.example.project.data.repository.UserRepositoryImpl
-import org.example.project.domain.repository.UserRepository
-import org.example.project.domain.usecase.AddUserUseCase
-import org.example.project.domain.usecase.GetUsersUseCase
-import org.example.project.presentation.screen.UserListScreen
-import org.example.project.presentation.viewmodel.UserViewModel
 
 /**
- * Simple manual DI - works on all platforms including WASM
+ * 메인 앱 컴포저블
+ * - 네비게이션 시스템을 사용하여 다양한 화면들을 관리
+ * - Material 3 디자인 시스템 적용
  */
-object AppDI {
-    // Data layer
-    private val userRemoteDataSource: UserRemoteDataSource = UserRemoteDataSourceImpl()
-    private val userRepository: UserRepository = UserRepositoryImpl(userRemoteDataSource)
-
-    // Domain layer
-    private val getUsersUseCase = GetUsersUseCase(userRepository)
-    private val addUserUseCase = AddUserUseCase(userRepository)
-
-    // Presentation layer
-    val userViewModel = UserViewModel(getUsersUseCase, addUserUseCase)
-}
-
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
-        UserListScreen(viewModel = AppDI.userViewModel)
+        // 네비게이션 시스템을 통해 앱 화면들을 관리
+        AppNavigation()
     }
 }

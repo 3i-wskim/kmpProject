@@ -143,6 +143,25 @@
         "플랫폼별 구현체는 expect/actual로 분리해주세요",
         "싱글톤 객체는 thread-safe하게 구현해주세요"
       ]
+    },
+    {
+      "filePathMatches": [
+        "**/*Test.kt",
+        "**/test/**/*.kt",
+        "**/BaseTest.kt",
+        "**/BaseCoroutineTest.kt"
+      ],
+      "rules": [
+        "테스트 코드는 반드시 app/commonTest 모듈 내에서만 작성해야하고, 테스트 클래스는 테스트 '대상 클래스명 + 목적 + Test'로 생성하고 코드가 양이 많으면 테스트 컨셉 별로 분산 관리가 필요함",
+        "테스트 함수는 목적에 따라 t10, t20 등으로 명명하고, 세부 테스트는 t11, t12처럼 작성",
+        "@DisplayName에 테스트 목적을 명확히 명시해야 함",
+        "테스트는 Given-When-Then 패턴으로 구조화하고, 반드시 BaseTest를 상속해야 함",
+        "코루틴이 필요한 경우 BaseCoroutineTest를 상속해야 함",
+        "Mock 객체는 최소한으로 사용하고 가능한 경우 실제 객체를 사용해야 하고, 모든 테스트는 독립적으로 작성되어 다른 테스트 실행 순서에 의존하지 않아야 함",
+        "테스트 라이브러리는 Junit5 와 mockk 를 사용함",
+        "특히 데이터 베이스 관련 테스트의 경우, 마이그레이션 및 데이터 유효성 등을 구체적으로 검사해야 함",
+        "withTransaction 대신 BeamoRoomDatabase 안에 있는 startTransaction를 사용해야 함"
+      ]
     }
   ],
   "mcpServers": {
@@ -257,6 +276,81 @@
       ],
       "env": {
         "PROJECT_ROOT": "C:/Users/dntmd/StudioProjects/KotlinProject"
+      }
+    },
+    "find_usage": {
+      "command": "grep",
+      "args": [
+        "-r",
+        "--include=*.kt",
+        "--include=*.java"
+      ],
+      "env": {}
+    },
+    "git_status": {
+      "command": "git",
+      "args": [
+        "status",
+        "--porcelain"
+      ],
+      "env": {}
+    },
+    "git_diff": {
+      "command": "git",
+      "args": [
+        "diff",
+        "--name-only"
+      ],
+      "env": {}
+    },
+    "file_count": {
+      "command": "find",
+      "args": [
+        ".",
+        "-name",
+        "*.kt",
+        "-type",
+        "f"
+      ],
+      "env": {}
+    },
+    "ktlint_check": {
+      "command": "./gradlew",
+      "args": [
+        "ktlintDevDebugCheck"
+      ],
+      "env": {}
+    },
+    "detekt_check": {
+      "command": "./gradlew",
+      "args": [
+        "detektDevDebug"
+      ],
+      "env": {}
+    },
+    "module_check": {
+      "command": "./gradlew",
+      "args": [
+        "projects"
+      ],
+      "env": {}
+    },
+    "tasks_list": {
+      "command": "./gradlew",
+      "args": [
+        "tasks",
+        "--all"
+      ],
+      "env": {}
+    },
+    "apk_size": {
+      "command": "./gradlew",
+      "args": [
+        ":app:assembleDevDebug",
+        "--info"
+      ],
+      "env": {
+        "GRADLE_OPTS": "-Xmx2g"
       }
     }
   }
