@@ -8,20 +8,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+
 import org.example.project.presentation.navigation.impl.StartNavigationActionsImpl
 import org.example.project.presentation.navigation.impl.MainNavigationActionsImpl
 import org.example.project.presentation.navigation.impl.SettingsNavigationActionsImpl
 import org.example.project.presentation.navigation.arguments.UserDetailArgument
 import org.example.project.presentation.navigation.arguments.ProfileArgument
-import org.example.project.presentation.screen.SplashScreen
-import org.example.project.presentation.screen.OnboardingScreen
-import org.example.project.presentation.screen.HomeScreen
-import org.example.project.presentation.screen.UserListScreen
-import org.example.project.presentation.screen.UserDetailScreen
-import org.example.project.presentation.screen.ProfileScreen
-import org.example.project.presentation.screen.SettingsMainScreen
-import org.example.project.presentation.screen.ThemeScreen
-import org.example.project.presentation.screen.LanguageScreen
+import org.example.project.presentation.navigation.page.SplashPage
+import org.example.project.presentation.navigation.page.OnboardingPage
+import org.example.project.presentation.navigation.page.HomePage
+import org.example.project.presentation.navigation.page.UserListPage
+import org.example.project.presentation.navigation.page.UserDetailPage
+import org.example.project.presentation.navigation.page.ProfilePage
+import org.example.project.presentation.navigation.page.SettingsMainPage
+import org.example.project.presentation.navigation.page.ThemePage
+import org.example.project.presentation.navigation.page.LanguagePage
 
 /**
  * 앱의 메인 네비게이션 컴포넌트
@@ -43,20 +44,23 @@ fun AppNavigation(
     ) {
         // 시작 페이지들
         composable(Page.Start.Splash.route) {
-            SplashScreen(navigationActions = startActions)
+            SplashPage(actions = startActions)
         }
 
         composable(Page.Start.Onboarding.route) {
-            OnboardingScreen(navigationActions = startActions)
+            OnboardingPage(actions = startActions)
         }
 
         // 메인 페이지들
-        composable(Page.Main.Home.route) {
-            HomeScreen(navigationActions = mainActions)
+        composable(Page.Main.Home.route) { backStackEntry ->
+            HomePage(
+                actions = mainActions,
+                navBackStackEntry = backStackEntry
+            )
         }
 
         composable(Page.Main.UserList.route) {
-            UserListScreen(navigationActions = mainActions)
+            UserListPage(actions = mainActions)
         }
 
         // 사용자 상세 페이지 (URL 파라미터 방식)
@@ -75,9 +79,9 @@ fun AppNavigation(
             val userName = backStackEntry.arguments?.getString("name")
             val argument = UserDetailArgument(userId = userId, userName = userName)
 
-            UserDetailScreen(
+            UserDetailPage(
                 argument = argument,
-                navigationActions = mainActions
+                actions = mainActions
             )
         }
 
@@ -93,23 +97,23 @@ fun AppNavigation(
             val isEditMode = backStackEntry.arguments?.getBoolean("isEditMode") ?: false
             val argument = ProfileArgument(userId = userId, isEditMode = isEditMode)
 
-            ProfileScreen(
+            ProfilePage(
                 argument = argument,
-                navigationActions = mainActions
+                actions = mainActions
             )
         }
 
         // 설정 페이지들
         composable(Page.Settings.Main.route) {
-            SettingsMainScreen(navigationActions = settingsActions)
+            SettingsMainPage(actions = settingsActions)
         }
 
         composable(Page.Settings.Theme.route) {
-            ThemeScreen(navigationActions = settingsActions)
+            ThemePage(actions = settingsActions)
         }
 
         composable(Page.Settings.Language.route) {
-            LanguageScreen(navigationActions = settingsActions)
+            LanguagePage(actions = settingsActions)
         }
     }
 }

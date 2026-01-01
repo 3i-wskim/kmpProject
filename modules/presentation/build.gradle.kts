@@ -51,7 +51,11 @@ kotlin {
 
             // Settings (공용 Key-Value 저장소)
             implementation(libs.multiplatformSettings)
-            // Simple manual DI - no framework needed!
+            
+            // Koin DI (수동 방식만 사용)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
 
         commonTest.dependencies {

@@ -1,10 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>KotlinProject</title>
+
+    <!-- 한글 폰트 로드 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap"
+          rel="stylesheet">
+
     <link type="text/css" rel="stylesheet" href="styles.css">
+    
+    <!-- Skiko Canvas 폰트 강제 주입 스크립트 -->
+    <script>
+        // DOM이 로드된 후 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 폰트 강제 주입 시작...');
+            
+            // 폰트가 로드될 때까지 대기
+            document.fonts.ready.then(function() {
+                console.log('✅ 웹 폰트 로드 완료');
+                console.log('📝 사용 가능한 폰트:', document.fonts);
+                
+                // Skiko Canvas를 찾아서 폰트 설정
+                const observer = new MutationObserver(function(mutations) {
+                    const canvas = document.querySelector('canvas');
+                    if (canvas) {
+                        console.log('🎨 Canvas 발견! 폰트 적용 시도...');
+                        
+                        // Canvas의 부모 요소에 폰트 강제 적용
+                        canvas.style.fontFamily = '"Noto Sans KR", sans-serif';
+                        if (canvas.parentElement) {
+                            canvas.parentElement.style.fontFamily = '"Noto Sans KR", sans-serif';
+                        }
+                        
+                        // Canvas 컨텍스트에도 시도 (작동하지 않을 수 있음)
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.font = '16px "Noto Sans KR"';
+                            console.log('✅ Canvas 폰트 설정 완료');
+                        }
+                        
+                        observer.disconnect();
+                    }
+                });
+                
+                observer.observe(document.body, { childList: true, subtree: true });
+            });
+        });
+    </script>
+    
     <script type="application/javascript" src="composeApp.js"></script>
 </head>
 <body>

@@ -44,4 +44,13 @@ class GetUsersUseCase(
                 }
             }
     }
+
+    /**
+     * Get user by ID
+     * @param id 사용자 ID
+     * @return User 또는 null (사용자가 없는 경우)
+     */
+    suspend fun getUserById(id: String): User? {
+        return userRepository.getUserById(id)
+    }
 }

@@ -31,7 +31,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
-            // Simple manual DI - no framework needed!
+            // Koin DI (수동 방식만 사용)
+            implementation(libs.koin.core)
         }
 
         commonTest.dependencies {

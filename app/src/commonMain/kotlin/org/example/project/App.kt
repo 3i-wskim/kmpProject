@@ -1,20 +1,31 @@
 package org.example.project
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import org.example.project.presentation.navigation.AppNavigation
+import org.example.project.di.appModules
+import org.example.project.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.KoinApplication
+import org.example.project.presentation.navigation.AppNavigation
 
-/**
- * 메인 앱 컴포저블
- * - 네비게이션 시스템을 사용하여 다양한 화면들을 관리
- * - Material 3 디자인 시스템 적용
- */
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
-        // 네비게이션 시스템을 통해 앱 화면들을 관리
-        AppNavigation()
+    // Koin DI 초기화
+    KoinApplication(
+        application = {
+            try {
+                modules(appModules)
+                println("✅ Koin 초기화 성공: ${getPlatform().name}")
+            } catch (e: Exception) {
+                println("❌ Koin 초기화 실패: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    ) {
+        // 커스텀 Typography로 모든 텍스트의 폰트를 일괄 적용
+        AppTheme {
+            println("📱 AppNavigation 시작...")
+            AppNavigation()
+        }
     }
 }

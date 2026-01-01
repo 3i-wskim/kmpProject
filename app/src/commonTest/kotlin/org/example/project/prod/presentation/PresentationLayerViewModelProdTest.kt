@@ -7,8 +7,8 @@ import org.example.project.domain.model.User
 import org.example.project.domain.usecase.AddUserUseCase
 import org.example.project.domain.usecase.GetUsersUseCase
 import org.example.project.data.repository.UserRepositoryImpl
-import org.example.project.presentation.viewmodel.UserViewModel
-import org.example.project.presentation.viewmodel.UserUiState
+import org.example.project.presentation.feature.user.UserViewModel
+import org.example.project.presentation.feature.user.UserContract
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -61,7 +61,6 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
         // When: 초기 UI 상태를 확인할 때
         advanceUntilIdle() // 초기 데이터 로딩 대기
         val initialUiState = userViewModel.uiState.first()
-        val initialSearchQuery = userViewModel.searchQuery.first()
 
         responseBodyPrinter("초기 UI 상태: loading=${initialUiState.isLoading}, users=${initialUiState.users.size}, error=${initialUiState.error}")
 
@@ -69,7 +68,7 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
         assertFalse(initialUiState.isLoading, "초기 로딩이 완료되어야 함")
         assertEquals(2, initialUiState.users.size, "활성 사용자 2명이 표시되어야 함")
         assertNull(initialUiState.error, "초기 에러는 null이어야 함")
-        assertEquals("", initialSearchQuery, "초기 검색어는 빈 문자열이어야 함")
+        assertEquals("", initialUiState.searchQuery, "초기 검색어는 빈 문자열이어야 함")
 
         // 활성 사용자만 표시되는지 확인
         assertTrue(initialUiState.users.all { it.isActive }, "모든 표시된 사용자가 활성 상태여야 함")
@@ -81,16 +80,15 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
         advanceUntilIdle() // 초기 상태 대기
 
         // When: 검색어를 변경할 때
-        userViewModel.onSearchQueryChanged("김")
+        userViewModel.onEvent(UserContract.Event.OnSearchQueryChanged("김"))
         advanceUntilIdle() // 검색 결과 대기
 
-        val searchQuery = userViewModel.searchQuery.first()
         val uiState = userViewModel.uiState.first()
 
-        responseBodyPrinter("검색 결과: query='$searchQuery', users=${uiState.users.map { it.name }}")
+        responseBodyPrinter("검색 결과: query='${uiState.searchQuery}', users=${uiState.users.map { it.name }}")
 
         // Then: 검색어와 결과가 업데이트되어야 함
-        assertEquals("김", searchQuery, "검색어가 올바르게 설정되어야 함")
+        assertEquals("김", uiState.searchQuery, "검색어가 올바르게 설정되어야 함")
         assertEquals(1, uiState.users.size, "김철수 1명만 표시되어야 함")
         assertEquals("김철수", uiState.users.first().name, "김철수가 검색되어야 함")
         assertFalse(uiState.isLoading, "검색 완료 후 로딩이 끝나야 함")
@@ -100,20 +98,19 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
     @Test
     fun t21_빈_검색어로_변경_시_전체_목록_표시() = runTest {
         // Given: 검색 상태인 ViewModel
-        userViewModel.onSearchQueryChanged("김")
+        userViewModel.onEvent(UserContract.Event.OnSearchQueryChanged("김"))
         advanceUntilIdle()
 
         // When: 검색어를 빈 문자열로 변경할 때
-        userViewModel.onSearchQueryChanged("")
+        userViewModel.onEvent(UserContract.Event.OnSearchQueryChanged(""))
         advanceUntilIdle()
 
-        val searchQuery = userViewModel.searchQuery.first()
         val uiState = userViewModel.uiState.first()
 
-        responseBodyPrinter("전체 목록 복원: query='$searchQuery', users=${uiState.users.size}명")
+        responseBodyPrinter("전체 목록 복원: query='${uiState.searchQuery}', users=${uiState.users.size}명")
 
         // Then: 전체 활성 사용자 목록이 표시되어야 함
-        assertEquals("", searchQuery, "검색어가 빈 문자열로 초기화되어야 함")
+        assertEquals("", uiState.searchQuery, "검색어가 빈 문자열로 초기화되어야 함")
         assertEquals(2, uiState.users.size, "전체 활성 사용자 2명이 표시되어야 함")
         assertTrue(uiState.users.any { it.name == "김철수" }, "김철수가 포함되어야 함")
         assertTrue(uiState.users.any { it.name == "이영희" }, "이영희가 포함되어야 함")
@@ -126,7 +123,7 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
         val initialCount = userViewModel.uiState.first().users.size
 
         // When: 새 사용자를 추가할 때
-        userViewModel.addUser("새로운사용자", "new@test.com")
+        userViewModel.onEvent(UserContract.Event.OnAddUser("새로운사용자", "new@test.com"))
         advanceUntilIdle() // 추가 작업 대기
 
         val finalUiState = userViewModel.uiState.first()
@@ -148,7 +145,7 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
         advanceUntilIdle()
 
         // When: 잘못된 데이터로 사용자를 추가할 때
-        userViewModel.addUser("", "invalid-email") // 빈 이름, 잘못된 이메일
+        userViewModel.onEvent(UserContract.Event.OnAddUser("", "invalid-email")) // 빈 이름, 잘못된 이메일
         advanceUntilIdle()
 
         val uiState = userViewModel.uiState.first()
@@ -166,14 +163,14 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
     @Test
     fun t40_에러_클리어_기능_검증() = runTest {
         // Given: 에러 상태인 ViewModel
-        userViewModel.addUser("", "invalid") // 에러 발생시킴
+        userViewModel.onEvent(UserContract.Event.OnAddUser("", "invalid")) // 에러 발생시킴
         advanceUntilIdle()
 
         val errorState = userViewModel.uiState.first()
         assertNotNull(errorState.error, "에러가 발생한 상태여야 함")
 
         // When: 에러를 클리어할 때
-        userViewModel.clearError()
+        userViewModel.onEvent(UserContract.Event.OnClearError)
 
         val clearedState = userViewModel.uiState.first()
         responseBodyPrinter("에러 클리어 후 상태: error=${clearedState.error}")
@@ -205,7 +202,7 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
         )
 
         // When: 완성된 프로필만 조회할 때
-        userViewModel.loadCompleteProfiles()
+        userViewModel.onEvent(UserContract.Event.OnLoadCompleteProfiles)
         advanceUntilIdle()
 
         val uiState = userViewModel.uiState.first()
@@ -241,17 +238,17 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
 
         // When: 여러 작업을 연속으로 수행할 때
         // 1. 검색
-        userViewModel.onSearchQueryChanged("이")
+        userViewModel.onEvent(UserContract.Event.OnSearchQueryChanged("이"))
         advanceUntilIdle()
         val searchState = userViewModel.uiState.first()
 
         // 2. 사용자 추가
-        userViewModel.addUser("이새로운", "new-lee@test.com")
+        userViewModel.onEvent(UserContract.Event.OnAddUser("이새로운", "new-lee@test.com"))
         advanceUntilIdle()
         val addedState = userViewModel.uiState.first()
 
         // 3. 검색어 초기화
-        userViewModel.onSearchQueryChanged("")
+        userViewModel.onEvent(UserContract.Event.OnSearchQueryChanged(""))
         advanceUntilIdle()
         val finalState = userViewModel.uiState.first()
 
@@ -282,7 +279,7 @@ class PresentationLayerViewModelProdTest : BaseCoroutineTest() {
         advanceUntilIdle()
 
         // When: "김"으로 검색할 때
-        userViewModel.onSearchQueryChanged("김")
+        userViewModel.onEvent(UserContract.Event.OnSearchQueryChanged("김"))
         advanceUntilIdle()
 
         val searchResult = userViewModel.uiState.first()

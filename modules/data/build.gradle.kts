@@ -37,7 +37,8 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
 
-            // Simple manual DI - no framework needed!
+            // Koin DI (수동 방식만 사용)
+            implementation(libs.koin.core)
         }
 
         commonTest.dependencies {

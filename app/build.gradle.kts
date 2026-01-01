@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -32,6 +32,15 @@ kotlin {
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
         outputModuleName.set("composeApp")
+
+        // 컴파일러 옵션 설정 - 문자 인코딩 지원
+        compilerOptions {
+            freeCompilerArgs.addAll(
+                "-Xwasm-use-new-exception-proposal",
+                "-opt-in=kotlin.ExperimentalUnsignedTypes"
+            )
+        }
+
         browser {
             val rootDirPath = project.rootDir.path
             val projectDirPath = project.projectDir.path
@@ -46,6 +55,8 @@ kotlin {
                     open = true          // 자동으로 브라우저 열기
                     port = 8080          // 기본 포트 (변경 가능)
                 }
+                // 한글 문자 인코딩 처리를 위한 설정
+                experiments.add("topLevelAwait")
             }
         }
         binaries.executable()
@@ -73,6 +84,11 @@ kotlin {
             implementation(project(":modules:presentation"))
             implementation(project(":modules:domain"))
             implementation(project(":modules:data"))
+            
+            // Koin DI (수동 방식만 사용)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
 
         androidMain.dependencies {
@@ -136,12 +152,4 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-    
-    // kotlin-inject KSP processor for all targets
-    add("kspCommonMainMetadata", libs.kotlinInjectCompiler)
-    add("kspAndroid", libs.kotlinInjectCompiler)
-    add("kspIosX64", libs.kotlinInjectCompiler)
-    add("kspIosArm64", libs.kotlinInjectCompiler)
-    add("kspIosSimulatorArm64", libs.kotlinInjectCompiler)
-    add("kspWasmJs", libs.kotlinInjectCompiler)
 }
