@@ -7,8 +7,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinproject.app.generated.resources.Res
+import kotlinproject.app.generated.resources.notosanskr_regular
 import org.example.project.theme.AppTheme
+import org.jetbrains.compose.resources.Font
 
 /**
  * 간단한 테스트 화면
@@ -18,6 +23,9 @@ import org.example.project.theme.AppTheme
 @Composable
 fun Web() {
     var count by remember { mutableStateOf(0) }
+    val notoSansKR = FontFamily(
+        Font(Res.font.notosanskr_regular, FontWeight.Normal)
+    )
     
     AppTheme {
         Column(
@@ -27,33 +35,42 @@ fun Web() {
         ) {
             Text(
                 text = "🎉 Kotlin Multiplatform WASM 테스트",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium,
+                fontFamily = notoSansKR
             )
             
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
                 text = "플랫폼: ${getPlatform().name}",
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                fontFamily = notoSansKR
             )
             
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
                 text = "카운트: $count",
-                style = MaterialTheme.typography.displayMedium
+                style = MaterialTheme.typography.displayMedium,
+                fontFamily = notoSansKR
             )
             
             Spacer(modifier = Modifier.height(16.dp))
             
             Button(onClick = { count++ }) {
-                Text("증가")
+                Text(
+                    text = "증가",
+                    fontFamily = notoSansKR
+                )
             }
             
             Spacer(modifier = Modifier.height(16.dp))
             
             Button(onClick = { count = 0 }) {
-                Text("초기화")
+                Text(
+                    text = "초기화",
+                    fontFamily = notoSansKR
+                )
             }
         }
     }
